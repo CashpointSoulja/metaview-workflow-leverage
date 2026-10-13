@@ -3,7 +3,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "metaview-workflow-leverage",
   "main": "src/worker.ts",
-  "compatibility_date": "2026-09-01",
+  "compatibility_date": "2026-08-15",
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

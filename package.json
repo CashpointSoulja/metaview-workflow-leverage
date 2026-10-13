@@ -8,7 +8,7 @@
     "dev": "vite build && wrangler dev",
     "build": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.web.json",
-    "test": "vitest run",
+    "test": "vite build && vitest run",
     "evals": "node --experimental-strip-types eval/run.ts",
     "evals:broken": "node --experimental-strip-types eval/run.ts --variant=broken",
     "dryrun": "vite build && wrangler deploy --dry-run --outdir .wrangler/dryrun"
