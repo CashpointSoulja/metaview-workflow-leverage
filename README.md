@@ -7,7 +7,7 @@ The lab shows how I would pick one high-leverage commercial workflow for a Busin
 ## Live release
 
 - Live demo: https://metaview-workflow-leverage.ayoahmed-49d.workers.dev
-- Voiced public walkthrough: https://drive.google.com/file/d/1rWTOKwmyELOlZ1igR3-dXH_5BrAdUEBN/view?usp=drivesdk&authuser=ayomideahmedcp%40gmail.com
+- Voiced public walkthrough: https://drive.google.com/file/d/1rWTOKwmyELOlZ1igR3-dXH_5BrAdUEBN/view
 - Release record: [docs/LIVE_RELEASE.md](docs/LIVE_RELEASE.md)
 
 ## What it does
