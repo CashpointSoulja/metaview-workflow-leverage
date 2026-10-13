@@ -16,7 +16,8 @@ The lab shows how I would pick one high-leverage commercial workflow for a Busin
 ## Architecture
 
 - `src/engine/`: pure TypeScript rules (ranking, build vs buy, evidence extraction, effort, commands, playbook).
-- `src/worker.ts`: Cloudflare Worker API with security headers, CSRF header check, body limits and visitor cookie.
+- `src/worker.ts`: Cloudflare Worker API with security headers, visitor cookie and write checks: same-origin `Origin`, no cross-site `Sec-Fetch-Site`, the `X-Requested-With: cwl` header and JSON only.
+- `src/body.ts`: reads request bodies as a stream, counting bytes and stopping at the 256 KiB limit before anything is buffered, then decodes strict UTF-8.
 - `src/workspace.ts`: one SQLite-backed Durable Object per visitor. Revision checks, idempotency keys, atomic imports, bounded event log, validation on load with backup and reseed.
 - `web/`: responsive UI (Vite, no framework), safe DOM construction, native dialogs.
 - `eval/`: 16 expected/actual evaluation cases, plus a deliberately broken rule.
@@ -28,6 +29,7 @@ npm install
 npm run dev            # vite build + wrangler dev on http://localhost:8787
 npm run typecheck
 npm test               # vite build + vitest in the Workers runtime
+npm run check:browser  # Playwright + axe against a running `npm run dev` (APP_URL, default http://127.0.0.1:8787)
 npm run evals          # standard rules: all cases pass
 npm run evals:broken   # first-source-wins rule: contradiction cases fail, exit code 1
 npm run dryrun         # wrangler deploy --dry-run, no deploy

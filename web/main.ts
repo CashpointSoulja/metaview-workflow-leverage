@@ -64,6 +64,24 @@ const INPUTS: [NumericField, string, string][] = [
   ['buildDays', 'Build effort (days)', '0.5 to 365'],
 ];
 
+/** A table wrapper that scrolls sideways on narrow screens. Focus inside it scrolls the focused control into view. */
+function scrollRegion(label: string, table: HTMLTableElement): HTMLElement {
+  const hint = h('p', { class: 'scroll-hint small muted', id: `hint-${label.toLowerCase().replace(/[^a-z]+/g, '-')}` },
+    'On narrow screens this table scrolls sideways; not every column is visible at once. Tab reaches every button. When the table itself has focus, the arrow keys, Home and End scroll it.');
+  const region = h('div', { class: 'scroll', tabindex: '0', role: 'region', 'aria-label': `${label}, scrolls sideways`, 'aria-describedby': hint.id,
+    onfocusin: (e: FocusEvent) => { const t = e.target as HTMLElement; if (t !== region) t.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
+    onkeydown: (e: KeyboardEvent) => {
+      if (e.target !== region) return;
+      const step = { ArrowRight: 80, ArrowLeft: -80, End: region.scrollWidth, Home: -region.scrollWidth }[e.key];
+      if (step === undefined) return;
+      e.preventDefault();
+      region.scrollBy({ left: step });
+    } }, table);
+  const wrap = document.createElement('div');
+  wrap.append(hint, region);
+  return wrap;
+}
+
 function pageChoose(): Child[] {
   const v = view!; const rk = v.derived.ranking;
   const sel = v.workspace.selection;
@@ -87,7 +105,7 @@ function pageChoose(): Child[] {
       h('h2', null, 'Leverage hypothesis'),
       h('p', { class: 'muted small mono' }, 'leverage = occurrences/month × minutes × share saved ÷ 60 × commercial weight ÷ build days'),
       h('p', { class: 'small muted' }, `${rk.rankedCount} of ${rk.total} workflows ranked. Every number is a synthetic hypothesis to test in discovery, not a measurement.`),
-      h('div', { class: 'scroll', tabindex: '0', role: 'region', 'aria-label': 'Table, scrolls sideways on small screens' }, h('table', null,
+      scrollRegion('Workflow ranking table', h('table', null,
         h('caption', { class: 'sr-only' }, 'Workflow candidates ranked by leverage hypothesis'),
         h('thead', null, h('tr', null, h('th', { class: 'num' }, 'Rank'), h('th', null, 'Workflow'), h('th', null, 'Team'), h('th', { class: 'num' }, 'Per month'), h('th', { class: 'num' }, 'Minutes'), h('th', { class: 'num' }, 'Share saved'), h('th', { class: 'num' }, 'Weight'), h('th', { class: 'num' }, 'Build days'), h('th', { class: 'num' }, 'Leverage'), h('th', null, 'Status'), h('th', null, h('span', { class: 'sr-only' }, 'Actions')))),
         h('tbody', null, ...rows)))),
@@ -121,7 +139,7 @@ function pageBuildBuy(): Child[] {
     ...header('02 · Decide', 'Build, buy, configure or do nothing', 'Weights are fixed up front. Unknown scores count as zero, and no option is recommended while any unknown could still flip the result at its best case.'),
     verdict(bb.recommendationId ? 'RECOMMEND' : 'NO PICK', bb.verdict, bb.recommendationId ? 'ok' : 'hold'),
     h('div', { class: 'card', style: 'margin-top:16px' },
-      h('div', { class: 'scroll', tabindex: '0', role: 'region', 'aria-label': 'Table, scrolls sideways on small screens' }, h('table', null,
+      scrollRegion('Build versus buy scores table', h('table', null,
         h('caption', { class: 'sr-only' }, 'Weighted build-versus-buy scores, 1 to 5'),
         h('thead', null, h('tr', null, h('th', null, 'Option'), ...crit.map((c) => h('th', { class: 'num', title: c.question }, `${c.label} ×${c.weight}`)), h('th', { class: 'num' }, 'Score'), h('th', { class: 'num' }, 'Best case'), h('th', null, h('span', { class: 'sr-only' }, 'Actions')))),
         h('tbody', null, ...bb.rows.map((r) => h('tr', { class: bb.recommendationId === r.option.id ? 'selected' : '' },
@@ -280,7 +298,7 @@ function pageEffort(): Child[] {
       h('div', { class: 'kpi' }, h('b', null, fmt(ef.aggregate.difference, ' min')), h('span', null, 'Aggregate difference (misleading if mix differs)')),
       h('div', { class: 'kpi' }, h('b', null, fmt(ef.mixAdjusted.difference, ' min')), h('span', null, `Within-segment difference, ${ef.mixAdjusted.coveredSegments.join(', ') || 'no'} segment(s)`))),
     ef.misleadingAggregate ? h('p', { class: 'quarantine', style: 'margin-top:16px' }, `The aggregate difference is driven by segment mix: enterprise is ${Math.round((ef.mix.baselineEnterpriseShare ?? 0) * 100)}% of baseline rows but ${Math.round((ef.mix.assistedEnterpriseShare ?? 0) * 100)}% of assisted rows. Read the per-segment table instead.`) : null,
-    h('div', { class: 'card', style: 'margin-top:16px' }, h('h2', null, 'By segment'), h('div', { class: 'scroll', tabindex: '0', role: 'region', 'aria-label': 'Table, scrolls sideways on small screens' }, h('table', null,
+    h('div', { class: 'card', style: 'margin-top:16px' }, h('h2', null, 'By segment'), scrollRegion('Effort by segment table', h('table', null,
       h('caption', { class: 'sr-only' }, 'Mean minutes per handoff by segment and arm'),
       h('thead', null, h('tr', null, h('th', null, 'Segment'), h('th', { class: 'num' }, 'Baseline n'), h('th', { class: 'num' }, 'Baseline mean'), h('th', { class: 'num' }, 'Assisted n'), h('th', { class: 'num' }, 'Assisted mean'), h('th', { class: 'num' }, 'Difference'), h('th', null, 'Status'))),
       h('tbody', null, ...ef.segments.map((s) => h('tr', null, h('td', null, s.segment), h('td', { class: 'num' }, `${s.baseline.n} (+${s.baseline.excluded} excl.)`), h('td', { class: 'num' }, fmt(s.baseline.mean)), h('td', { class: 'num' }, `${s.assisted.n} (+${s.assisted.excluded} excl.)`), h('td', { class: 'num' }, fmt(s.assisted.mean)), h('td', { class: 'num' }, s.difference ?? '–'), h('td', null, statusChip(s.status), h('div', { class: 'small muted' }, s.note)))))))),
@@ -316,7 +334,7 @@ function pageEvals(): Child[] {
     const [std, brk] = await Promise.all(['standard', 'broken'].map((x) => fetch(`/api/evals?variant=${x}`).then((r) => r.json())));
     box.replaceChildren(...[std, brk].map((out) => h('div', { class: 'card' },
       h('div', { class: 'actions', style: 'justify-content:space-between' }, h('h2', null, out.variant === 'broken' ? 'Deliberately broken rule: first value wins on contradiction' : 'Standard rules'), chip(`${out.passed} pass · ${out.failed} fail`, out.failed ? 'bad' : 'ok')),
-      h('div', { class: 'scroll', tabindex: '0', role: 'region', 'aria-label': `${out.variant === 'broken' ? 'Broken rule' : 'Standard rules'} results table` }, h('table', null, h('caption', { class: 'sr-only' }, `Expected versus actual, ${out.rules}`), h('thead', null, h('tr', null, h('th', null, 'Case'), h('th', null, 'Expected'), h('th', null, 'Actual'), h('th', null, 'Result'))),
+      scrollRegion(`${out.variant === 'broken' ? 'Broken rule' : 'Standard rules'} results table`, h('table', null, h('caption', { class: 'sr-only' }, `Expected versus actual, ${out.rules}`), h('thead', null, h('tr', null, h('th', null, 'Case'), h('th', null, 'Expected'), h('th', null, 'Actual'), h('th', null, 'Result'))),
         h('tbody', null, ...out.results.map((r: { id: string; title: string; expected: string; actual: string; pass: boolean }) => h('tr', { class: `evalrow${r.pass ? '' : ' fail'}` }, h('td', null, h('span', { class: 'mono small' }, r.id), ' ', r.title), h('td', { class: 'mono small' }, r.expected), h('td', { class: 'mono small' }, r.actual), h('td', null, statusChip(r.pass ? 'PASS' : 'FAIL'))))))))));
   };
   load().catch(() => box.replaceChildren(h('p', null, 'Evals failed to load.')));

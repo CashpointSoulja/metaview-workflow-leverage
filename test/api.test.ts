@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { env, exports } from 'cloudflare:workers';
 import { runInDurableObject } from 'cloudflare:test';
 import type { VisitorWorkspace } from '../src/workspace.ts';
+import { readBody } from '../src/body.ts';
 
 const B = 'https://lab.example';
 const worker = () => (exports as unknown as { default: { fetch: (r: Request) => Promise<Response> } }).default;
@@ -12,8 +13,16 @@ async function visitor() {
   return { cookie, state: (await r.json()) as { revision: number; workspace: { packets: { id: string; owner: string | null }[] }; recovered: string | null; eventCount: number } };
 }
 const get = (cookie: string, path: string) => worker().fetch(new Request(`${B}${path}`, { headers: { cookie: `cwl_visitor=${cookie}` } }));
-const post = (cookie: string, body: unknown, headers: Record<string, string> = {}) => worker().fetch(new Request(`${B}/api/commands`, { method: 'POST', headers: { cookie: `cwl_visitor=${cookie}`, 'content-type': 'application/json', 'x-requested-with': 'cwl', ...headers }, body: typeof body === 'string' ? body : JSON.stringify(body) }));
+const post = (cookie: string, body: unknown, headers: Record<string, string> = {}) => worker().fetch(new Request(`${B}/api/commands`, { method: 'POST', headers: { cookie: `cwl_visitor=${cookie}`, origin: B, 'content-type': 'application/json', 'x-requested-with': 'cwl', ...headers }, body: typeof body === 'string' ? body : JSON.stringify(body) }));
 const owner = 'Dana Whitlock (CS, synthetic)';
+const LIMIT = 256 * 1024;
+const enc = new TextEncoder();
+const assign = { expectedRevision: 1, command: { type: 'assignOwner', packetId: 'HO-1001', owner } };
+const raw = (cookie: string, headers: Record<string, string>, body: BodyInit) => worker().fetch(new Request(`${B}/api/commands`, { method: 'POST', headers: { cookie: `cwl_visitor=${cookie}`, ...headers }, body }));
+const browserHeaders = { origin: B, 'sec-fetch-site': 'same-origin', 'sec-fetch-mode': 'cors', 'sec-fetch-dest': 'empty', 'content-type': 'application/json', 'x-requested-with': 'cwl' };
+const streamOf = (chunks: Uint8Array[]) => new ReadableStream<Uint8Array>({ start(c) { for (const x of chunks) c.enqueue(x); c.close(); } });
+const revisionOf = async (cookie: string) => ((await (await get(cookie, '/api/state')).json()) as { revision: number }).revision;
+const errorOf = async (r: Response) => ((await r.json()) as { error: string }).error;
 
 describe('worker API', () => {
   it('health is up and says no external writes', async () => {
@@ -145,5 +154,145 @@ describe('worker API', () => {
 
   it('unknown routes 404 as JSON', async () => {
     expect((await worker().fetch(new Request(`${B}/api/nope`))).status).toBe(404);
+  });
+});
+
+describe('API boundary: origin', () => {
+  it('a normal same-origin browser write is accepted', async () => {
+    const { cookie } = await visitor();
+    const r = await raw(cookie, browserHeaders, JSON.stringify(assign));
+    expect(r.status).toBe(200);
+    expect(await revisionOf(cookie)).toBe(2);
+  });
+
+  it('a same-origin write from a browser that sends no Sec-Fetch-Site is accepted', async () => {
+    const { cookie } = await visitor();
+    const { 'sec-fetch-site': _s, 'sec-fetch-mode': _m, 'sec-fetch-dest': _d, ...older } = browserHeaders;
+    expect((await raw(cookie, older, JSON.stringify(assign))).status).toBe(200);
+  });
+
+  it('a cross-origin write is refused even with the custom header and a valid body', async () => {
+    const { cookie } = await visitor();
+    const r = await raw(cookie, { ...browserHeaders, origin: 'https://evil.example', 'sec-fetch-site': 'cross-site' }, JSON.stringify(assign));
+    expect(r.status).toBe(403);
+    expect(await errorOf(r)).toBe('cross_origin');
+    const sub = await raw(cookie, { ...browserHeaders, origin: 'https://app.lab.example', 'sec-fetch-site': 'same-site' }, JSON.stringify(assign));
+    expect(await errorOf(sub)).toBe('cross_origin');
+    const opaque = await raw(cookie, { ...browserHeaders, origin: 'null' }, JSON.stringify(assign));
+    expect(await errorOf(opaque)).toBe('cross_origin');
+    const scheme = await raw(cookie, { ...browserHeaders, origin: 'http://lab.example' }, JSON.stringify(assign));
+    expect(await errorOf(scheme)).toBe('cross_origin');
+    expect(await revisionOf(cookie)).toBe(1);
+  });
+
+  it('a matching Origin with a cross-site or same-site Sec-Fetch-Site is refused', async () => {
+    const { cookie } = await visitor();
+    for (const site of ['cross-site', 'same-site', 'none']) {
+      const r = await raw(cookie, { ...browserHeaders, 'sec-fetch-site': site }, JSON.stringify(assign));
+      expect(r.status, site).toBe(403);
+      expect(await errorOf(r)).toBe('cross_site');
+    }
+    expect(await revisionOf(cookie)).toBe(1);
+  });
+
+  it('a write with no Origin is refused, custom header or not', async () => {
+    const { cookie } = await visitor();
+    const { origin: _o, ...noOrigin } = browserHeaders;
+    const r = await raw(cookie, noOrigin, JSON.stringify(assign));
+    expect(r.status).toBe(403);
+    expect(await errorOf(r)).toBe('origin_required');
+    const { 'x-requested-with': _x, ...noHeader } = browserHeaders;
+    const r2 = await raw(cookie, noHeader, JSON.stringify(assign));
+    expect(r2.status).toBe(403);
+    expect(await errorOf(r2)).toBe('missing_header');
+    expect(await revisionOf(cookie)).toBe(1);
+  });
+
+  it('reads stay open: GET state and exports need no Origin', async () => {
+    const { cookie } = await visitor();
+    expect((await get(cookie, '/api/state')).status).toBe(200);
+    expect((await get(cookie, '/api/export/audit.json')).status).toBe(200);
+  });
+});
+
+describe('API boundary: body size and encoding', () => {
+  it('a declared Content-Length over the limit is refused before the body is read', async () => {
+    const req = new Request(`${B}/api/commands`, { method: 'POST', headers: { 'content-length': String(LIMIT + 1) }, body: streamOf([enc.encode('{}')]) });
+    const out = await readBody(req, LIMIT);
+    expect(out instanceof Response && out.status).toBe(413);
+    expect(req.bodyUsed).toBe(false);
+    const { cookie } = await visitor();
+    const big = enc.encode(JSON.stringify({ ...assign, note: 'x'.repeat(LIMIT) }));
+    expect((await raw(cookie, browserHeaders, big)).status).toBe(413);
+    expect(await revisionOf(cookie)).toBe(1);
+  });
+
+  it('the reader stops pulling an endless stream just past the limit', async () => {
+    const chunk = new Uint8Array(1000).fill(0x61);
+    let pulls = 0;
+    const endless = new ReadableStream<Uint8Array>({ pull(c) { pulls++; c.enqueue(chunk); } }, { highWaterMark: 0 });
+    const out = await readBody(new Request(`${B}/x`, { method: 'POST', body: endless }), 10_000);
+    expect(out instanceof Response && out.status).toBe(413);
+    expect(pulls).toBeGreaterThanOrEqual(11);
+    expect(pulls).toBeLessThanOrEqual(12);
+  });
+
+  it('a declared multibyte body over the limit is refused although its character count is under it', async () => {
+    const { cookie } = await visitor();
+    const text = JSON.stringify({ ...assign, note: '€'.repeat(90_000) });
+    expect(text.length).toBeLessThan(LIMIT);
+    expect(enc.encode(text).byteLength).toBeGreaterThan(LIMIT);
+    expect((await raw(cookie, browserHeaders, text)).status).toBe(413);
+    expect(await revisionOf(cookie)).toBe(1);
+  });
+
+  it('a chunked body with no Content-Length is cut off once it passes the limit', async () => {
+    const { cookie } = await visitor();
+    const chunk = enc.encode('€'.repeat(4096));
+    let sent = 0;
+    const endless = new ReadableStream<Uint8Array>({ pull(c) { sent += chunk.byteLength; c.enqueue(chunk); } }, { highWaterMark: 0 });
+    const r = await raw(cookie, browserHeaders, endless);
+    expect(r.status).toBe(413);
+    expect(sent).toBeGreaterThan(LIMIT);
+    expect(sent).toBeLessThanOrEqual(LIMIT + 2 * chunk.byteLength);
+    expect(await revisionOf(cookie)).toBe(1);
+  });
+
+  it('a chunked multibyte body over the limit is refused', async () => {
+    const { cookie } = await visitor();
+    const bytes = enc.encode(JSON.stringify({ ...assign, note: '日本'.repeat(45_000) }));
+    expect(bytes.byteLength).toBeGreaterThan(LIMIT);
+    const chunks = [];
+    for (let i = 0; i < bytes.byteLength; i += 7_001) chunks.push(bytes.slice(i, i + 7_001));
+    expect((await raw(cookie, browserHeaders, streamOf(chunks))).status).toBe(413);
+  });
+
+  it('a multibyte body under the limit is accepted, even when a character is split across chunks', async () => {
+    const { cookie } = await visitor();
+    const bytes = enc.encode(JSON.stringify({ ...assign, note: '€'.repeat(80_000) + ' café' }));
+    expect(bytes.byteLength).toBeLessThan(LIMIT);
+    const split = bytes.byteLength - 3;
+    expect(bytes[split] & 0xc0).toBe(0x80);
+    const r = await raw(cookie, browserHeaders, streamOf([bytes.slice(0, split), bytes.slice(split)]));
+    expect(r.status).toBe(200);
+    expect(await revisionOf(cookie)).toBe(2);
+  });
+
+  it('malformed UTF-8 is refused instead of being replaced and parsed', async () => {
+    const { cookie } = await visitor();
+    const head = enc.encode('{"expectedRevision":1,"command":{"type":"assignOwner","packetId":"HO-1001","owner":"Dana');
+    const tail = enc.encode(' Whitlock (CS, synthetic)"}}');
+    for (const bad of [[0xff], [0xc3, 0x28], [0xe2, 0x82], [0xed, 0xa0, 0x80]]) {
+      const r = await raw(cookie, browserHeaders, streamOf([head, new Uint8Array(bad), tail]));
+      expect(r.status, bad.join(',')).toBe(400);
+      expect(await errorOf(r)).toBe('invalid_utf8');
+    }
+    expect(await revisionOf(cookie)).toBe(1);
+  });
+
+  it('a non-numeric Content-Length is refused', async () => {
+    const { cookie } = await visitor();
+    const r = await raw(cookie, { ...browserHeaders, 'content-length': '12abc' }, streamOf([enc.encode('{}')]));
+    expect([400, 413]).toContain(r.status);
   });
 });

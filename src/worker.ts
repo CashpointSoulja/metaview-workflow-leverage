@@ -1,5 +1,6 @@
 import { VisitorWorkspace, json, type Env } from './workspace.ts';
 import { LIMITS } from './engine/types.ts';
+import { readBody } from './body.ts';
 import { runEvals } from '../eval/cases.ts';
 
 export { VisitorWorkspace };
@@ -41,11 +42,14 @@ async function api(req: Request, env: Env, url: URL, visitor: string): Promise<R
   if (path === '/api/commands') {
     if (req.method !== 'POST') return json({ error: 'method_not_allowed', message: 'Use POST' }, 405, { allow: 'POST' });
     if (req.headers.get('x-requested-with') !== 'cwl') return json({ error: 'missing_header', message: 'X-Requested-With: cwl is required' }, 403);
+    const origin = req.headers.get('origin');
+    if (origin === null) return json({ error: 'origin_required', message: 'Writes need a same-origin Origin header' }, 403);
+    if (origin !== url.origin) return json({ error: 'cross_origin', message: 'Writes are only accepted from this site' }, 403);
+    const site = req.headers.get('sec-fetch-site');
+    if (site !== null && site !== 'same-origin') return json({ error: 'cross_site', message: 'Writes are only accepted from this site' }, 403);
     if (!(req.headers.get('content-type') ?? '').toLowerCase().startsWith('application/json')) return json({ error: 'unsupported_media_type', message: 'Send application/json' }, 415);
-    const declared = Number(req.headers.get('content-length') ?? '0');
-    if (declared > LIMITS.bodyBytes) return json({ error: 'too_large', message: `Body over ${LIMITS.bodyBytes} bytes` }, 413);
-    const raw = await req.text();
-    if (new TextEncoder().encode(raw).length > LIMITS.bodyBytes) return json({ error: 'too_large', message: `Body over ${LIMITS.bodyBytes} bytes` }, 413);
+    const raw = await readBody(req, LIMITS.bodyBytes);
+    if (typeof raw !== 'string') return raw;
     let body: Record<string, unknown>;
     try { body = JSON.parse(raw); } catch { return json({ error: 'invalid_json', message: 'Body is not valid JSON' }, 400); }
     if (!body || typeof body !== 'object' || Array.isArray(body)) return json({ error: 'invalid_json', message: 'Body must be an object' }, 400);

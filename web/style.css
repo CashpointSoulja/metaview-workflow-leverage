@@ -145,3 +145,5 @@ pre.export { white-space: pre-wrap; word-break: break-word; font: 12px/1.5 var(-
   .brand b { font-size: 15px; }
   .brand span { font-size: 12px; }
 }
+.scroll-hint { display: none; margin: 0 0 8px; }
+@media (max-width: 640px) { .scroll-hint { display: block; } }
