@@ -1,5 +1,7 @@
 # Deployment checklist (not yet deployed)
 
+> **Historical, pre-release record.** This file describes the state before the 13 October 2026 release. Its statements that the app is not deployed or the video is not public are superseded; the current publication record is [LIVE_RELEASE.md](LIVE_RELEASE.md).
+
 Target: Cloudflare Workers Free. Deploy only to the destination approved separately.
 
 1. `npm ci`

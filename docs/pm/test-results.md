@@ -1,5 +1,7 @@
 # Test results
 
+> **Historical, pre-release record.** This file describes the state before the 13 October 2026 release. Its statements that the app is not deployed or the video is not public are superseded; the current publication record is [LIVE_RELEASE.md](../LIVE_RELEASE.md).
+
 These are the actual outputs from the last run, on 2026-10-13, on a local machine (Node 24.19, workerd via `@cloudflare/vitest-pool-workers` 0.23). I edited out nothing except the local checkout path. Nothing here was run against a deployed URL, because nothing is deployed.
 
 ## Summary

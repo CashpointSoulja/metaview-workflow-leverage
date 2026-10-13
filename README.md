@@ -4,6 +4,12 @@ Independent concept and code by Ayo Ahmed. Not affiliated with, endorsed by or b
 
 The lab shows how I would pick one high-leverage commercial workflow for a Business Operations role, prove it on a bounded slice, and leave a reusable playbook behind. It deliberately does not rebuild recruiter search or interview scheduling, because those are the company's own public product.
 
+## Live release
+
+- Live demo: https://metaview-workflow-leverage.ayoahmed-49d.workers.dev
+- Voiced public walkthrough: https://drive.google.com/file/d/1rWTOKwmyELOlZ1igR3-dXH_5BrAdUEBN/view?usp=drivesdk&authuser=ayomideahmedcp%40gmail.com
+- Release record: [docs/LIVE_RELEASE.md](docs/LIVE_RELEASE.md)
+
 ## What it does
 
 1. **Choose a workflow.** Eight candidates across Sales, CS, Marketing, Ops and Talent, ranked by one visible formula: `occurrences/month × minutes × share saved ÷ 60 × commercial weight ÷ build days`. Missing inputs leave a workflow unranked. Product-overlap workflows are excluded. A winner needs a 10% margin.
@@ -39,7 +45,7 @@ Node 22+ is needed for `--experimental-strip-types`.
 
 ## Deployment
 
-Not deployed. `wrangler.jsonc` targets Workers Free: one Worker, static assets, and a SQLite Durable Object class (`new_sqlite_classes`). No paid bindings, no secrets, no outbound requests. See [docs/deploy.md](docs/deploy.md).
+Historical, pre-release note (superseded by the [live release record](docs/LIVE_RELEASE.md)): not deployed. `wrangler.jsonc` targets Workers Free: one Worker, static assets, and a SQLite Durable Object class (`new_sqlite_classes`). No paid bindings, no secrets, no outbound requests. See [docs/deploy.md](docs/deploy.md).
 
 ## Documents
 

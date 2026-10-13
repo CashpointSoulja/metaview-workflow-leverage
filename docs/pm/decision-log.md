@@ -11,4 +11,4 @@
 | 2026-10-13 | One SQLite Durable Object per visitor on Workers Free | isolation, revision checks, no paid services | KV, D1 shared database |
 | 2026-10-13 | Mix-adjusted effort comparison, HOLD below 5 rows per arm per segment | avoids segment-mix artefacts and small samples | raw aggregate |
 | 2026-10-13 | Open fonts (Figtree, IBM Plex Mono) instead of the company's fonts | no copying proprietary assets | system fonts |
-| 2026-10-13 | No deploy; Wrangler dry-run only | brief says deploy later after independent audit | deploy now |
+| 2026-10-13 | No deploy; Wrangler dry-run only (historical, pre-release; superseded by [LIVE_RELEASE.md](../LIVE_RELEASE.md)) | brief says deploy later after independent audit | deploy now |

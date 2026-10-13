@@ -1,5 +1,7 @@
 # Demo walkthrough source
 
+> **Historical, pre-release record.** This file describes the state before the 13 October 2026 release. Its statements that the app is not deployed or the video is not public are superseded; the current publication record is [LIVE_RELEASE.md](../docs/LIVE_RELEASE.md).
+
 **Status: local draft, not public footage.** The app is not deployed yet, so the walkthrough is recorded against a local `wrangler dev` server. It must not be described as a public-demo video until it has been re-recorded against the approved public URL.
 
 What it is:

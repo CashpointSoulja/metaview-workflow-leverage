@@ -10,6 +10,6 @@
 | No external system is written | code: `onboardingPlan` only builds text; Worker has no outbound fetch | checked by reading code and tests |
 | Visitor data is isolated | one Durable Object per random visitor id; `test/api.test.ts` | local Workers runtime, not production |
 | Tests and evals pass | `docs/pm/test-results.md`, actual command output | rerun to confirm |
-| Demo video | local recording only, see `video/README.md` | not public footage until deployed |
+| Demo video | local recording only, see `video/README.md` | not public footage until deployed (historical, pre-release; see [LIVE_RELEASE.md](../LIVE_RELEASE.md) for the published walkthrough) |
 
 No interviews were run. No customer, employee or candidate data was used. No lift was measured.
