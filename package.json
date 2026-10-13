@@ -20,6 +20,7 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.23.0",
     "@cloudflare/workers-types": "^5.20261013.1",
+    "playwright": "^1.48.2",
     "typescript": "5.9",
     "vite": "^7.3.7",
     "vitest": "^4.1.0",

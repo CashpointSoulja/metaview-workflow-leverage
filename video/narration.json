@@ -1,0 +1,70 @@
+[
+  {
+    "scene": "intro",
+    "lines": [
+      "This is the Commercial Workflow Leverage Lab, an independent concept by Ayo Ahmed.",
+      "Every company, person and number in it is synthetic.",
+      "I rank eight commercial workflows with one formula you can see and argue with.",
+      "Missing inputs stay unranked. Recruiter search is excluded, because that is the company's own product."
+    ]
+  },
+  {
+    "scene": "select",
+    "lines": [
+      "The sales to onboarding handoff leads on leverage per build day, by a clear margin.",
+      "I select it, and the choice is bound to these exact inputs."
+    ]
+  },
+  {
+    "scene": "buildbuy",
+    "lines": [
+      "Next, build versus buy.",
+      "Buying stays partly unscored, because cost and security are unknown. Even its upper bound can't beat a thin checker.",
+      "So I record the decision to build, owned by Business Operations."
+    ]
+  },
+  {
+    "scene": "contradiction",
+    "lines": [
+      "On the handoff desk, every fact quotes its exact source.",
+      "Here, two sources disagree on the hiring system, so the packet abstains instead of guessing.",
+      "A person picks one of the cited values, and records the reason, so the choice can be audited."
+    ]
+  },
+  {
+    "scene": "hostile",
+    "lines": [
+      "This packet hides an instruction inside a synthetic call note.",
+      "It is quarantined as plain data, and it changes nothing."
+    ]
+  },
+  {
+    "scene": "execute",
+    "lines": [
+      "Before approval, a packet needs one accountable owner from the CS roster,",
+      "and a dated adoption checkpoint, with a named metric and a threshold.",
+      "Approval is bound to a content fingerprint. Any later edit makes it stale.",
+      "Running it builds a simulated onboarding plan. Nothing is emailed, or written to a CRM."
+    ]
+  },
+  {
+    "scene": "effort",
+    "lines": [
+      "The effort view compares synthetic baseline and assisted minutes, segment by segment.",
+      "Partial timers are excluded. A segment with no baseline is not compared, and none of it is called lift."
+    ]
+  },
+  {
+    "scene": "playbook",
+    "lines": [
+      "The rules export as a reusable operating playbook, with a full audit trail."
+    ]
+  },
+  {
+    "scene": "evals",
+    "lines": [
+      "Finally, the evaluations. Sixteen expected and actual cases pass on the real rules.",
+      "Swap in a rule where the first source wins, and the contradiction cases turn red."
+    ]
+  }
+]

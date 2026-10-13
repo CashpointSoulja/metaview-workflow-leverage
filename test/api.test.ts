@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { env, exports } from 'cloudflare:workers';
 import { runInDurableObject } from 'cloudflare:test';
+import type { VisitorWorkspace } from '../src/workspace.ts';
 
 const B = 'https://lab.example';
 const worker = () => (exports as unknown as { default: { fetch: (r: Request) => Promise<Response> } }).default;
@@ -110,8 +111,9 @@ describe('worker API', () => {
   it('recovery: corrupt stored state is backed up, reseeded and reported once', async () => {
     const { cookie } = await visitor();
     await post(cookie, { expectedRevision: 1, command: { type: 'assignOwner', packetId: 'HO-1001', owner } });
-    const stub = env.WORKSPACE.get(env.WORKSPACE.idFromName(cookie));
-    await runInDurableObject(stub, async (instance: { corruptForTest: (s: string) => void }) => instance.corruptForTest('{"schema":1,"revision":2,"packets":"oops"'));
+    const ns = (env as unknown as { WORKSPACE: DurableObjectNamespace<VisitorWorkspace> }).WORKSPACE;
+    const stub = ns.get(ns.idFromName(cookie));
+    await runInDurableObject(stub, async (instance: VisitorWorkspace) => instance.corruptForTest('{"schema":1,"revision":2,"packets":"oops"'));
     const s1 = (await (await get(cookie, '/api/state')).json()) as { revision: number; recovered: string | null; events: { type: string }[] };
     expect(s1.recovered).toMatch(/backed up/);
     expect(s1.events.map((e) => e.type)).toContain('workspace.recovered');

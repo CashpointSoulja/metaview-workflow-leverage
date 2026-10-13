@@ -1,0 +1,111 @@
+1
+0:00:00,000 --> 0:00:04,960
+This is the Commercial Workflow Leverage Lab,
+an independent concept by Ayo Ahmed.
+
+2
+0:00:05,190 --> 0:00:08,460
+Every company, person and number in it is synthetic.
+
+3
+0:00:08,690 --> 0:00:12,600
+I rank eight commercial workflows
+with one formula you can see and argue with.
+
+4
+0:00:12,830 --> 0:00:19,120
+Missing inputs stay unranked. Recruiter search is excluded,
+because that is the company's own product.
+
+5
+0:00:19,350 --> 0:00:23,990
+The sales to onboarding handoff leads
+on leverage per build day, by a clear margin.
+
+6
+0:00:24,220 --> 0:00:27,550
+I select it, and the choice is bound
+to these exact inputs.
+
+7
+0:00:28,190 --> 0:00:29,990
+Next, build versus buy.
+
+8
+0:00:30,220 --> 0:00:36,650
+Buying stays partly unscored: cost and security are unknown.
+Even its upper bound can't beat a thin checker.
+
+9
+0:00:36,880 --> 0:00:40,670
+So I record the decision to build,
+owned by Business Operations.
+
+10
+0:00:40,900 --> 0:00:44,040
+On the handoff desk,
+every fact quotes its exact source.
+
+11
+0:00:44,270 --> 0:00:49,720
+Here, two sources disagree on the hiring system,
+so the packet abstains instead of guessing.
+
+12
+0:00:49,950 --> 0:00:55,200
+A person picks one of the cited values, and records
+the reason, so the choice can be audited.
+
+13
+0:00:55,430 --> 0:00:59,040
+This packet hides an instruction
+inside a synthetic call note.
+
+14
+0:00:59,330 --> 0:01:02,450
+It is quarantined as plain data, and it changes nothing.
+
+15
+0:01:02,680 --> 0:01:06,660
+Before approval, a packet needs
+one accountable owner from the CS roster,
+
+16
+0:01:08,060 --> 0:01:11,720
+and a dated adoption checkpoint,
+with a named metric and a threshold.
+
+17
+0:01:11,950 --> 0:01:16,530
+Approval is bound to a content fingerprint.
+Any later edit makes it stale.
+
+18
+0:01:16,760 --> 0:01:22,260
+Running it builds a simulated onboarding plan.
+Nothing is emailed, or written to a CRM.
+
+19
+0:01:22,490 --> 0:01:27,380
+The effort view compares synthetic baseline
+and assisted minutes, segment by segment.
+
+20
+0:01:27,610 --> 0:01:33,860
+Partial timers are excluded. A segment with no baseline
+is not compared, and none of it is called lift.
+
+21
+0:01:34,090 --> 0:01:38,430
+The rules export as a reusable operating playbook,
+with a full audit trail.
+
+22
+0:01:38,660 --> 0:01:44,820
+Finally, the evaluations. Sixteen expected
+and actual cases pass on the real rules.
+
+23
+0:01:45,050 --> 0:01:49,900
+Swap in a rule where the first source wins,
+and the contradiction cases turn red.
